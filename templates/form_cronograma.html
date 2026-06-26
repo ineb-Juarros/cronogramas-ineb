@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}{% if action == 'editar' %}Editar{% else %}Nuevo{% endif %} Cronograma · INEB{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <h2>{% if action == 'editar' %}✏️ Editar Cronograma{% else %}➕ Nuevo Cronograma{% endif %}</h2>
+
+  <form method="POST" id="form-cronograma">
+
+    <!-- ── ENCABEZADO ─────────────────────────────── -->
+    <fieldset class="card">
+      <legend>📌 Datos del Cronograma</legend>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Cátedra *</label>
+          <input type="text" name="catedra" required maxlength="120"
+                 value="{{ cronograma.catedra if cronograma else '' }}"
+                 placeholder="Ej: Ciencias Naturales" />
+        </div>
+        <div class="form-group">
+          <label>Unidad *</label>
+          <input type="text" name="unidad" required maxlength="80"
+                 value="{{ cronograma.unidad if cronograma else '' }}"
+                 placeholder="Ej: Segunda Unidad" />
+        </div>
+        <div class="form-group">
+          <label>Grado *</label>
+          <select name="grado" required>
+            {% for g in grados %}
+            <option value="{{ g }}" {% if cronograma and cronograma.grado == g %}selected{% endif %}>{{ g }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sección *</label>
+          <input type="text" name="seccion" required maxlength="10"
+                 value="{{ cronograma.seccion if cronograma else '' }}"
+                 placeholder="A" style="text-transform:uppercase" />
+        </div>
+        <div class="form-group">
+          <label>Ciclo *</label>
+          <input type="text" name="ciclo" required maxlength="10"
+                 value="{{ cronograma.ciclo if cronograma else '2026' }}"
+                 placeholder="2026" />
+        </div>
+        <div class="form-group">
+          <label>Punteo Meta *</label>
+          <input type="number" name="punteo_meta" id="punteo_meta" required min="1" max="999"
+                 value="{{ cronograma.punteo_meta if cronograma else 100 }}" />
+        </div>
+        <div class="form-group">
+          <label>Fecha Inicio *</label>
+          <input type="date" name="fecha_inicio" required
+                 value="{{ cronograma.fecha_inicio if cronograma else '' }}" />
+        </div>
+        <div class="form-group">
+          <label>Fecha Fin *</label>
+          <input type="date" name="fecha_fin" required
+                 value="{{ cronograma.fecha_fin if cronograma else '' }}" />
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ── PUNTEO TOTAL (resumen flotante) ──────── -->
+    <div class="punteo-resumen card">
+      <span>Total Unidad: <strong id="total-unidad">0</strong> pts</span>
+      <span id="badge-punteo" class="badge badge-neutral">—</span>
+    </div>
+
+    <!-- ── ACTIVIDADES ───────────────────────────── -->
+    {% set actsmap = {} %}
+    {% if cronograma %}
+      {% for a in cronograma.actividades %}
+        {% if actsmap.update({a.numero: a}) %}{% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% for i in range(1, 7) %}
+    {% set act = actsmap.get(i) %}
+    <fieldset class="card actividad-card" id="card-act-{{ i }}">
+      <legend>
+        <span class="act-num">Actividad {{ i }}</span>
+        <span class="act-total">Total: <strong id="total-act-{{ i }}">0</strong> pts</span>
+      </legend>
+
+      <div class="grid-2">
+        <div class="form-group span-2">
+          <label>Descripción de la Actividad</label>
+          <input type="text" name="act_{{ i }}_descripcion"
+                 id="act_{{ i }}_descripcion"
+                 value="{{ act.descripcion if act else '' }}"
+                 placeholder="Ej: Prueba escrita de comprensión lectora" />
+        </div>
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" name="act_{{ i }}_fecha"
+                 value="{{ act.fecha_actividad if act else '' }}" />
+        </div>
+      </div>
+
+      <!-- Aspectos a calificar -->
+      <div class="aspectos-header">
+        <strong>Aspectos a Calificar</strong>
+        <button type="button" class="btn btn-sm btn-add"
+                onclick="agregarAspecto({{ i }})">+ Agregar Aspecto</button>
+      </div>
+      <div class="aspectos-list" id="aspectos-act-{{ i }}">
+        {% if act and act.aspectos %}
+          {% for asp in act.aspectos %}
+          <div class="aspecto-row">
+            <input type="text"
+                   name="act_{{ i }}_asp_{{ loop.index }}_nombre"
+                   placeholder="Nombre del aspecto"
+                   value="{{ asp.nombre }}"
+                   class="asp-nombre" />
+            <input type="number"
+                   name="act_{{ i }}_asp_{{ loop.index }}_puntaje"
+                   placeholder="Pts"
+                   value="{{ asp.puntaje }}"
+                   min="0" max="999"
+                   class="asp-puntaje"
+                   data-act="{{ i }}" />
+            <button type="button" class="btn-remove-asp" onclick="quitarAspecto(this)">✕</button>
+          </div>
+          {% endfor %}
+        {% else %}
+          <!-- Fila vacía inicial -->
+          <div class="aspecto-row">
+            <input type="text" name="act_{{ i }}_asp_1_nombre"
+                   placeholder="Nombre del aspecto" class="asp-nombre" />
+            <input type="number" name="act_{{ i }}_asp_1_puntaje"
+                   placeholder="Pts" min="0" max="999"
+                   class="asp-puntaje" data-act="{{ i }}" />
+            <button type="button" class="btn-remove-asp" onclick="quitarAspecto(this)">✕</button>
+          </div>
+        {% endif %}
+      </div>
+    </fieldset>
+    {% endfor %}
+
+    <!-- ── BOTONES ───────────────────────────────── -->
+    <div class="form-actions">
+      <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">← Cancelar</a>
+      <button type="submit" class="btn btn-primary">💾 Guardar Cronograma</button>
+    </div>
+
+  </form>
+</div>
+
+<script src="{{ url_for('static', filename='js/form.js') }}"></script>
+{% endblock %}

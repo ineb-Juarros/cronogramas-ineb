@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Mis Cronogramas · INEB{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <h2>📋 Mis Cronogramas</h2>
+  <a href="{{ url_for('nuevo_cronograma') }}" class="btn btn-primary">➕ Nuevo</a>
+</div>
+
+{% if cronogramas %}
+<div class="table-wrapper">
+  <table class="tabla-cronogramas">
+    <thead>
+      <tr>
+        <th>Cátedra</th>
+        <th>Grado</th>
+        <th>Secc.</th>
+        <th>Unidad</th>
+        <th>Período</th>
+        <th>Meta</th>
+        <th>Total</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in cronogramas %}
+      <tr>
+        <td><strong>{{ c.catedra }}</strong></td>
+        <td>{{ c.grado }}</td>
+        <td class="center">{{ c.seccion }}</td>
+        <td>{{ c.unidad }}</td>
+        <td class="nowrap">{{ c.fecha_inicio }} – {{ c.fecha_fin }}</td>
+        <td class="center">{{ c.punteo_meta }}</td>
+        <td class="center">
+          {% set total = c.total_unidad %}
+          <span class="badge {% if total == c.punteo_meta %}badge-ok{% elif total == 0 %}badge-neutral{% else %}badge-err{% endif %}">
+            {{ total }}
+          </span>
+        </td>
+        <td class="acciones nowrap">
+          <a href="{{ url_for('editar_cronograma', cid=c.id) }}" class="btn btn-sm btn-edit" title="Editar">✏️</a>
+          <a href="{{ url_for('imprimir_uno', cid=c.id) }}" class="btn btn-sm btn-print" target="_blank" title="Imprimir">🖨️</a>
+          <form method="POST" action="{{ url_for('eliminar_cronograma', cid=c.id) }}"
+                style="display:inline"
+                onsubmit="return confirm('¿Eliminar este cronograma? Esta acción no se puede deshacer.')">
+            <button type="submit" class="btn btn-sm btn-delete" title="Eliminar">🗑️</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <p>📭 Aún no tienes cronogramas registrados.</p>
+  <a href="{{ url_for('nuevo_cronograma') }}" class="btn btn-primary">➕ Crear mi primer cronograma</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,296 @@
+/* ═══════════════════════════════════════════════
+   main.css · Cronogramas INEB Domingo Juarros 2026
+   Copyright® Machs
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --azul:       #1a4b8c;
+  --azul-claro: #d9e4f5;
+  --verde:      #1a7a1a;
+  --rojo:       #b00000;
+  --amarillo:   #a06000;
+  --gris:       #f4f6fa;
+  --borde:      #ccd5e0;
+  --texto:      #1a2a3a;
+  --sombra:     0 2px 8px rgba(0,0,0,.10);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 14px;
+  background: var(--gris);
+  color: var(--texto);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── NAVBAR ─────────────────────────────────── */
+.navbar {
+  background: var(--azul);
+  color: #fff;
+  padding: 0 24px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+}
+.navbar-brand { font-size: 16px; font-weight: 700; }
+.navbar-sub   { font-size: 12px; opacity: .75; margin-left: 8px; font-weight: 400; }
+.navbar-links { display: flex; align-items: center; gap: 16px; }
+.navbar-links a { color: #fff; text-decoration: none; font-size: 13px; opacity: .9; }
+.navbar-links a:hover { opacity: 1; text-decoration: underline; }
+.navbar-user  { font-size: 13px; opacity: .8; }
+.btn-logout   {
+  background: rgba(255,255,255,.18);
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+/* ── CONTAINER ─────────────────────────────── */
+.container {
+  max-width: 1100px;
+  margin: 28px auto;
+  padding: 0 20px;
+  flex: 1;
+}
+
+/* ── ALERTAS ───────────────────────────────── */
+.alert {
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 13.5px;
+}
+.alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.alert-danger  { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.alert-info    { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+/* ── AUTH BOX ──────────────────────────────── */
+.auth-box {
+  max-width: 420px;
+  margin: 48px auto;
+  background: #fff;
+  padding: 36px 40px;
+  border-radius: 10px;
+  box-shadow: var(--sombra);
+}
+.auth-box h2   { color: var(--azul); margin-bottom: 6px; font-size: 22px; }
+.auth-sub      { color: #666; font-size: 13px; margin-bottom: 24px; }
+.auth-link     { margin-top: 20px; text-align: center; font-size: 13px; color: #555; }
+.auth-link a   { color: var(--azul); font-weight: 600; }
+
+/* ── FORM ELEMENTS ─────────────────────────── */
+.form-group        { margin-bottom: 14px; }
+.form-group label  { display: block; font-weight: 600; font-size: 12.5px; margin-bottom: 5px; color: #3a4a5a; }
+.form-group small  { font-weight: 400; color: #888; }
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--borde);
+  border-radius: 5px;
+  font-size: 13.5px;
+  color: var(--texto);
+  background: #fff;
+  transition: border .15s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(26,75,140,.12);
+}
+
+/* ── BOTONES ───────────────────────────────── */
+.btn {
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  transition: opacity .15s, box-shadow .15s;
+}
+.btn:hover { opacity: .88; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+.btn-primary   { background: var(--azul);  color: #fff; }
+.btn-secondary { background: #6c757d; color: #fff; }
+.btn-full      { display: block; width: 100%; text-align: center; }
+.btn-sm        { padding: 4px 10px; font-size: 12px; }
+.btn-edit      { background: #0d6efd; color: #fff; }
+.btn-print     { background: #0a8a5c; color: #fff; }
+.btn-delete    { background: #dc3545; color: #fff; }
+.btn-add       { background: var(--azul-claro); color: var(--azul); }
+
+/* ── DASHBOARD ─────────────────────────────── */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.dashboard-header h2 { font-size: 20px; color: var(--azul); }
+
+.table-wrapper { overflow-x: auto; }
+.tabla-cronogramas {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--sombra);
+}
+.tabla-cronogramas th {
+  background: var(--azul);
+  color: #fff;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 12.5px;
+}
+.tabla-cronogramas td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--borde);
+  font-size: 13px;
+}
+.tabla-cronogramas tr:last-child td { border-bottom: none; }
+.tabla-cronogramas tr:hover td { background: #f0f5ff; }
+.center  { text-align: center; }
+.nowrap  { white-space: nowrap; }
+.acciones { display: flex; gap: 6px; align-items: center; }
+
+/* ── BADGES ────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.badge-ok      { background: #d4edda; color: var(--verde); }
+.badge-err     { background: #f8d7da; color: var(--rojo); }
+.badge-neutral { background: #e9ecef; color: #555; }
+
+/* ── EMPTY STATE ───────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: var(--sombra);
+}
+.empty-state p { font-size: 16px; margin-bottom: 20px; }
+
+/* ── FORMULARIO CRONOGRAMA ─────────────────── */
+.form-page h2  { color: var(--azul); margin-bottom: 20px; font-size: 20px; }
+.card {
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: var(--sombra);
+}
+fieldset.card  { border: 1px solid var(--borde); }
+fieldset.card legend {
+  padding: 0 10px;
+  font-weight: 700;
+  color: var(--azul);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.act-total { font-weight: 400; font-size: 12px; color: #555; }
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.span-2 { grid-column: span 2; }
+
+/* Punteo resumen */
+.punteo-resumen {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--azul);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Aspectos */
+.aspectos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 14px 0 8px;
+  font-size: 13px;
+}
+.aspecto-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.aspecto-row .asp-nombre {
+  flex: 1;
+}
+.aspecto-row .asp-puntaje {
+  width: 72px;
+  flex-shrink: 0;
+}
+.btn-remove-asp {
+  background: none;
+  border: 1px solid #ccc;
+  color: #888;
+  border-radius: 4px;
+  padding: 3px 7px;
+  cursor: pointer;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.btn-remove-asp:hover { background: #f8d7da; color: #b00; border-color: #b00; }
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 6px;
+  padding-bottom: 40px;
+}
+
+/* ── FOOTER ─────────────────────────────────── */
+.footer {
+  text-align: center;
+  padding: 14px;
+  font-size: 11.5px;
+  color: #999;
+  border-top: 1px solid var(--borde);
+  margin-top: auto;
+}
+
+/* ── RESPONSIVE ─────────────────────────────── */
+@media (max-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .span-2 { grid-column: span 1; }
+  .navbar-sub { display: none; }
+  .tabla-cronogramas th:nth-child(4),
+  .tabla-cronogramas td:nth-child(4) { display: none; }
+}
