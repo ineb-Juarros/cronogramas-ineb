@@ -144,6 +144,29 @@ def login():
     return render_template('login.html')
 
 
+
+@app.route('/recuperar', methods=['GET', 'POST'])
+def recuperar():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    if request.method == 'POST':
+        email    = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        confirm  = request.form.get('confirm', '')
+        maestro  = Maestro.query.filter_by(email=email).first()
+        if not maestro:
+            flash('No existe una cuenta con ese correo.', 'danger')
+        elif password != confirm:
+            flash('Las contrasenas no coinciden.', 'danger')
+        elif len(password) < 6:
+            flash('La contrasena debe tener al menos 6 caracteres.', 'danger')
+        else:
+            maestro.set_password(password)
+            db.session.commit()
+            flash('Contrasena actualizada correctamente. Ya puedes iniciar sesion.', 'success')
+            return redirect(url_for('login'))
+    return render_template('recuperar.html')
+
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if current_user.is_authenticated:

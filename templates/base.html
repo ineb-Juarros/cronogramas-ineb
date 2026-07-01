@@ -9,7 +9,8 @@
 <body>
   <nav class="navbar">
     <div class="navbar-brand">
-      📋 Cronogramas INEB <span class="navbar-sub">Domingo Juarros · 2026</span>
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo INEB" style="height:42px;margin-right:10px;vertical-align:middle;" />
+      <span>Cronogramas INEB <span class="navbar-sub">Domingo Juarros · 2026</span></span>
     </div>
     {% if current_user.is_authenticated %}
     <div class="navbar-links">
@@ -35,7 +36,9 @@
   </main>
 
   <footer class="footer">
-    Copyright® Machs · INEB "Domingo Juarros" · Sistema de Cronogramas 2026
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="height:28px;vertical-align:middle;margin-right:8px;" />
+    INEB "Domingo Juarros" · Sistema de Cronogramas 2026<br/>
+    <small>Copyright® Machs</small>
   </footer>
 </body>
 </html>

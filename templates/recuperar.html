@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Recuperar Contrasena - Cronogramas INEB{% endblock %}
+
+{% block content %}
+<div class="auth-box">
+  <h2>Recuperar Contrasena</h2>
+  <p class="auth-sub">Ingresa tu correo y la nueva contrasena que deseas usar.</p>
+
+  <form method="POST" action="{{ url_for('recuperar') }}">
+    <div class="form-group">
+      <label for="email">Correo electronico</label>
+      <input type="email" id="email" name="email" required
+             placeholder="tucorreo@gmail.com" autocomplete="email" />
+    </div>
+    <div class="form-group">
+      <label for="password">Nueva contrasena <small>(minimo 6 caracteres)</small></label>
+      <input type="password" id="password" name="password" required
+             placeholder="Nueva contrasena" minlength="6" />
+    </div>
+    <div class="form-group">
+      <label for="confirm">Confirmar nueva contrasena</label>
+      <input type="password" id="confirm" name="confirm" required
+             placeholder="Repetir contrasena" minlength="6" />
+    </div>
+    <button type="submit" class="btn btn-primary btn-full">Cambiar contrasena</button>
+  </form>
+
+  <p class="auth-link"><a href="{{ url_for('login') }}">Volver al inicio de sesion</a></p>
+</div>
+{% endblock %}
