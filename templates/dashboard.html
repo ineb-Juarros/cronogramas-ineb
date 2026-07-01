@@ -40,6 +40,7 @@
         <td class="acciones nowrap">
           <a href="{{ url_for('editar_cronograma', cid=c.id) }}" class="btn btn-sm btn-edit" title="Editar">✏️</a>
           <a href="{{ url_for('imprimir_uno', cid=c.id) }}" class="btn btn-sm btn-print" target="_blank" title="Imprimir">🖨️</a>
+          <a href="{{ url_for('exportar_word', cid=c.id) }}" class="btn btn-sm" style="background:#2e7d32;color:#fff" title="Descargar Word">📄</a>
           <form method="POST" action="{{ url_for('eliminar_cronograma', cid=c.id) }}"
                 style="display:inline"
                 onsubmit="return confirm('¿Eliminar este cronograma? Esta acción no se puede deshacer.')">

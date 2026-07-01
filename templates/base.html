@@ -16,6 +16,7 @@
       <span class="navbar-user">👤 {{ current_user.nombre }}</span>
       <a href="{{ url_for('dashboard') }}">Mis Cronogramas</a>
       <a href="{{ url_for('imprimir') }}" target="_blank">🖨️ Imprimir todos</a>
+      <a href="{{ url_for('consolidado') }}" target="_blank">📋 Consolidado</a>
       <a href="{{ url_for('logout') }}" class="btn-logout">Salir</a>
     </div>
     {% endif %}

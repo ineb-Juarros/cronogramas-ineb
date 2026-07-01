@@ -16,7 +16,12 @@ import json, os
 # ─────────────────────────────────────────────
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'cambiar-en-produccion-2026')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cronogramas.db'
+
+# Ruta de BD compatible con Render y local
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+DB_DIR   = '/tmp' if os.environ.get('RENDER') else BASE_DIR
+DB_PATH  = os.path.join(DB_DIR, 'cronogramas.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -82,10 +87,9 @@ class Actividad(db.Model):
     __tablename__ = 'actividades'
     id              = db.Column(db.Integer, primary_key=True)
     cronograma_id   = db.Column(db.Integer, db.ForeignKey('cronogramas.id'), nullable=False)
-    numero          = db.Column(db.Integer, nullable=False)   # 1–6
+    numero          = db.Column(db.Integer, nullable=False)   # 1-6
     descripcion     = db.Column(db.Text,    nullable=False)
     fecha_actividad = db.Column(db.String(20), nullable=True)
-    # Aspectos: guardados como JSON  [{nombre: str, puntaje: int}, ...]
     aspectos_json   = db.Column(db.Text, default='[]')
 
     @property
@@ -211,7 +215,7 @@ def nuevo_cronograma():
             punteo_meta  = int(request.form.get('punteo_meta', 100) or 100),
         )
         db.session.add(cron)
-        db.session.flush()  # get cron.id
+        db.session.flush()
 
         for i in range(1, 7):
             desc = request.form.get(f'act_{i}_descripcion', '').strip()
@@ -261,7 +265,6 @@ def editar_cronograma(cid):
         cron.punteo_meta  = int(request.form.get('punteo_meta', 100) or 100)
         cron.actualizado_en = datetime.utcnow()
 
-        # Eliminar actividades viejas y recrear
         for a in cron.actividades:
             db.session.delete(a)
         db.session.flush()
@@ -315,7 +318,6 @@ def eliminar_cronograma(cid):
 @app.route('/imprimir')
 @login_required
 def imprimir():
-    """Renderiza TODOS los cronogramas del maestro para impresión (4 por hoja)."""
     cronogramas = (Cronograma.query
                    .filter_by(maestro_id=current_user.id)
                    .order_by(Cronograma.grado, Cronograma.seccion)
@@ -327,7 +329,6 @@ def imprimir():
 @app.route('/imprimir/<int:cid>')
 @login_required
 def imprimir_uno(cid):
-    """Imprime un solo cronograma."""
     cron = Cronograma.query.get_or_404(cid)
     if cron.maestro_id != current_user.id:
         abort(403)
@@ -350,6 +351,151 @@ def validate_punteo():
                     'msg': f'Total: {total} / {meta} puntos'})
 
 
+
+
+# ─────────────────────────────────────────────
+# CONSOLIDADO (subdirector ve todos los cronogramas)
+# ─────────────────────────────────────────────
+
+ORDEN_GRADOS = ['Primero Básico', 'Segundo Básico', 'Tercero Básico']
+
+@app.route('/consolidado')
+@login_required
+def consolidado():
+    """Vista consolidada: todos los cronogramas ordenados por grado y seccion."""
+    todos = Cronograma.query.all()
+    def sort_key(c):
+        try:
+            g = ORDEN_GRADOS.index(c.grado)
+        except ValueError:
+            g = 99
+        return (g, c.seccion.upper())
+    todos.sort(key=sort_key)
+    return render_template('consolidado.html', cronogramas=todos,
+                            maestro=current_user)
+
+
+# ─────────────────────────────────────────────
+# EXPORT A WORD (.docx)
+# ─────────────────────────────────────────────
+
+@app.route('/cronograma/<int:cid>/word')
+@login_required
+def exportar_word(cid):
+    """Genera un archivo .docx con el cronograma del maestro."""
+    from io import BytesIO
+    try:
+        from docx import Document
+        from docx.shared import Pt, Cm, RGBColor
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        from docx.oxml.ns import qn
+        from docx.oxml import OxmlElement
+    except ImportError:
+        flash('Error: la librería python-docx no está instalada.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    cron = Cronograma.query.get_or_404(cid)
+    if cron.maestro_id != current_user.id:
+        abort(403)
+
+    doc = Document()
+
+    # Márgenes
+    for section in doc.sections:
+        section.top_margin    = Cm(1.5)
+        section.bottom_margin = Cm(1.5)
+        section.left_margin   = Cm(2)
+        section.right_margin  = Cm(2)
+
+    # Título
+    titulo = doc.add_heading('', level=1)
+    run = titulo.add_run(f'Cronograma de Actividades — {cron.catedra}')
+    run.font.size  = Pt(14)
+    run.font.bold  = True
+    run.font.color.rgb = RGBColor(0x1a, 0x4b, 0x8c)
+    titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # Datos generales
+    doc.add_paragraph('')
+    info = doc.add_paragraph()
+    info.add_run('Grado: ').bold = True
+    info.add_run(f'{cron.grado}   ')
+    info.add_run('Sección: ').bold = True
+    info.add_run(f'{cron.seccion}   ')
+    info.add_run('Unidad: ').bold = True
+    info.add_run(f'{cron.unidad}   ')
+    info.add_run('Ciclo: ').bold = True
+    info.add_run(f'{cron.ciclo}')
+
+    info2 = doc.add_paragraph()
+    info2.add_run('Período: ').bold = True
+    info2.add_run(f'{cron.fecha_inicio} al {cron.fecha_fin}   ')
+    info2.add_run('Punteo Meta: ').bold = True
+    info2.add_run(f'{cron.punteo_meta} pts')
+
+    info3 = doc.add_paragraph()
+    info3.add_run('Maestro/a: ').bold = True
+    info3.add_run(current_user.nombre)
+
+    doc.add_paragraph('')
+
+    # Tabla de actividades
+    tabla = doc.add_table(rows=1, cols=4)
+    tabla.style = 'Table Grid'
+    tabla.autofit = True
+
+    # Encabezados
+    encabezados = ['#', 'Actividad', 'Aspectos a Calificar', 'Pts']
+    anchos = [Cm(1), Cm(6), Cm(8), Cm(1.5)]
+    hdr = tabla.rows[0].cells
+    for i, (texto, ancho) in enumerate(zip(encabezados, anchos)):
+        hdr[i].width = ancho
+        hdr[i].text  = texto
+        run = hdr[i].paragraphs[0].runs[0]
+        run.bold = True
+        run.font.color.rgb = RGBColor(0xff, 0xff, 0xff)
+        run.font.size = Pt(10)
+        # Fondo azul
+        tc   = hdr[i]._tc
+        tcPr = tc.get_or_add_tcPr()
+        shd  = OxmlElement('w:shd')
+        shd.set(qn('w:val'),   'clear')
+        shd.set(qn('w:color'), 'auto')
+        shd.set(qn('w:fill'),  '1A4B8C')
+        tcPr.append(shd)
+
+    # Filas de actividades
+    for act in cron.actividades:
+        aspectos_txt = '\n'.join(
+            f"- {a['nombre']}: {a['puntaje']} pts" for a in act.aspectos
+        )
+        fila = tabla.add_row().cells
+        fila[0].text = str(act.numero)
+        fila[1].text = act.descripcion + (f'\n{act.fecha_actividad}' if act.fecha_actividad else '')
+        fila[2].text = aspectos_txt
+        fila[3].text = str(act.total_actividad)
+        for cell in fila:
+            for p in cell.paragraphs:
+                for r in p.runs:
+                    r.font.size = Pt(9)
+
+    # Total
+    doc.add_paragraph('')
+    total_p = doc.add_paragraph()
+    total_p.add_run('Total Unidad: ').bold = True
+    total_p.add_run(f'{cron.total_unidad} / {cron.punteo_meta} pts')
+
+    # Guardar en memoria
+    buf = BytesIO()
+    doc.save(buf)
+    buf.seek(0)
+
+    from flask import send_file
+    nombre_archivo = f"cronograma_{cron.catedra}_{cron.grado}_{cron.seccion}.docx".replace(' ', '_')
+    return send_file(buf, as_attachment=True,
+                     download_name=nombre_archivo,
+                     mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+
 # ─────────────────────────────────────────────
 # INICIALIZACIÓN
 # ─────────────────────────────────────────────
@@ -357,7 +503,6 @@ def validate_punteo():
 def init_db():
     with app.app_context():
         db.create_all()
-        # Maestro demo si la DB está vacía
         if not Maestro.query.first():
             demo = Maestro(nombre='Maestro Demo', email='demo@ineb.edu.gt')
             demo.set_password('demo1234')
@@ -366,6 +511,7 @@ def init_db():
             print('✓ BD creada con usuario demo: demo@ineb.edu.gt / demo1234')
 
 
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True, port=5000)

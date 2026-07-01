@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Impresion - {{ maestro.nombre }}</title>
+  <title>Consolidado - INEB Domingo Juarros 2026</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -11,8 +11,6 @@
       background: #e8e8e8;
       padding: 20px;
     }
-
-    /* TOOLBAR */
     .toolbar {
       background: #1a4b8c;
       color: #fff;
@@ -24,7 +22,7 @@
       border-radius: 8px;
       flex-wrap: wrap;
     }
-    .toolbar h2 { font-size: 13px; flex: 1; min-width: 200px; }
+    .toolbar h2 { font-size: 13px; flex: 1; }
     .btn {
       background: #fff;
       color: #1a4b8c;
@@ -53,17 +51,14 @@
       background: rgba(255,255,255,0.2);
       color: #fff;
       border: 1px solid rgba(255,255,255,0.4);
-      width: 28px;
-      height: 28px;
+      width: 28px; height: 28px;
       border-radius: 4px;
       font-size: 16px;
       cursor: pointer;
       font-weight: bold;
-      line-height: 1;
     }
     #font-size-display { min-width: 32px; text-align: center; font-weight: bold; }
 
-    /* HOJA OFICIO */
     .hoja {
       background: #fff;
       width: 21.59cm;
@@ -75,8 +70,6 @@
       gap: 0.25cm;
       box-shadow: 0 2px 12px rgba(0,0,0,.2);
     }
-
-    /* CRONOGRAMA */
     .cronograma {
       width: 49.4%;
       border: 1px solid #333;
@@ -91,23 +84,9 @@
       color: #fff;
       padding: 5px 7px;
     }
-    .cron-header h3 {
-      font-size: 1.1em;
-      margin-bottom: 2px;
-      color: #fff;
-      font-weight: bold;
-    }
-    .cron-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1px 8px;
-      font-size: 0.9em;
-      color: #fff;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+    .cron-header h3 { font-size: 1.1em; margin-bottom: 2px; color: #fff; font-weight: bold; }
+    .cron-meta { display: flex; flex-wrap: wrap; gap: 1px 8px; font-size: 0.9em; color: #fff; }
+    table { width: 100%; border-collapse: collapse; }
     th {
       background: #2a5fa8;
       -webkit-print-color-adjust: exact;
@@ -118,11 +97,7 @@
       border: 1px solid #555;
       font-size: 0.9em;
     }
-    td {
-      padding: 3px 4px;
-      border: 1px solid #ccc;
-      vertical-align: top;
-    }
+    td { padding: 3px 4px; border: 1px solid #ccc; vertical-align: top; }
     .td-num { text-align: center; width: 18px; font-weight: bold; }
     .td-total { text-align: center; width: 28px; font-weight: bold; }
     .aspectos-cell { font-size: 0.9em; color: #222; }
@@ -145,19 +120,14 @@
     }
     .cron-footer span, .cron-footer strong { color: #fff; }
 
-    /* IMPRESION */
     @media print {
       @page { size: legal portrait; margin: 0.5cm; }
       body { background: none; padding: 0; }
       .toolbar { display: none; }
       .hoja {
-        width: 100%;
-        min-height: 0;
-        margin: 0;
-        padding: 0.3cm;
+        width: 100%; min-height: 0; margin: 0; padding: 0.3cm;
         box-shadow: none;
-        page-break-after: always;
-        break-after: page;
+        page-break-after: always; break-after: page;
       }
       .hoja:last-child { page-break-after: auto; break-after: auto; }
       .cronograma { break-inside: avoid; page-break-inside: avoid; }
@@ -167,14 +137,12 @@
 <body>
 
 <div class="toolbar">
-  <h2>Cronogramas - {{ maestro.nombre }} - {{ cronogramas|length }} cronograma(s)</h2>
-
+  <h2>Consolidado - INEB "Domingo Juarros" - {{ cronogramas|length }} cronograma(s)</h2>
   <div class="font-controls">
     <button onclick="cambiarFuente(-1)">-</button>
     <span id="font-size-display">10px</span>
     <button onclick="cambiarFuente(1)">+</button>
   </div>
-
   <a href="{{ url_for('dashboard') }}" class="btn btn-outline">&#8592; Volver</a>
   <button class="btn" onclick="window.print()">Imprimir ahora</button>
 </div>
@@ -190,10 +158,10 @@
         <span>{{ c.grado }} - Seccion {{ c.seccion }}</span>
         <span>{{ c.unidad }} - Ciclo {{ c.ciclo }}</span>
         <span>{{ c.fecha_inicio }} al {{ c.fecha_fin }}</span>
+        <span>Maestro/a: {{ c.maestro.nombre }}</span>
         <span>Meta: {{ c.punteo_meta }} pts</span>
       </div>
     </div>
-
     <table>
       <thead>
         <tr>
@@ -209,9 +177,7 @@
           <td class="td-num">{{ act.numero }}</td>
           <td>
             {{ act.descripcion }}
-            {% if act.fecha_actividad %}
-            <br/><small>{{ act.fecha_actividad }}</small>
-            {% endif %}
+            {% if act.fecha_actividad %}<br/><small>{{ act.fecha_actividad }}</small>{% endif %}
           </td>
           <td class="aspectos-cell">
             {% for asp in act.aspectos %}
@@ -223,9 +189,8 @@
         {% endfor %}
       </tbody>
     </table>
-
     <div class="cron-footer">
-      <span>Maestro/a: <strong>{{ maestro.nombre }}</strong></span>
+      <span>{{ c.maestro.nombre }}</span>
       <span>Total: <strong>{{ c.total_unidad }} / {{ c.punteo_meta }} pts</strong></span>
     </div>
   </div>
@@ -241,6 +206,5 @@
     document.getElementById('font-size-display').textContent = tamano + 'px';
   }
 </script>
-
 </body>
 </html>
